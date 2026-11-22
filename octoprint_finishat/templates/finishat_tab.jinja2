@@ -1,0 +1,84 @@
+<div class="finishat">
+  <!-- Active schedule -->
+  <div class="alert alert-info" data-bind="visible: job()">
+    <h4>{{ _('Scheduled print') }}</h4>
+    <p>
+      <strong data-bind="text: job() && job().path"></strong><br>
+      {{ _('Starts') }} <strong data-bind="text: jobStartLabel"></strong>
+      <span data-bind="text: countdown"></span>,
+      {{ _('finishes') }} <strong data-bind="text: jobEndLabel"></strong>.
+    </p>
+    <p data-bind="visible: job() && job().launching">
+      <i class="fas fa-spinner fa-spin"></i> {{ _('Starting: powering on the printer and connecting…') }}
+    </p>
+    <button class="btn btn-danger" data-bind="click: cancel, disable: busy() || (job() && job().launching)">
+      <i class="fas fa-times"></i> {{ _('Cancel schedule') }}
+    </button>
+  </div>
+
+  <!-- New schedule -->
+  <div data-bind="visible: !job()">
+    <h4>{{ _('Schedule a print') }}</h4>
+    <p class="muted">{{ _("Pick the file and the time you want it to finish: I'll work out when to start it.") }}</p>
+
+    <form class="form-horizontal" data-bind="submit: schedule">
+      <div class="control-group">
+        <label class="control-label">{{ _('File') }}</label>
+        <div class="controls">
+          <select class="input-xxlarge" data-bind="options: files, optionsText: fileLabel, optionsValue: 'path', value: selected, optionsCaption: chooseFileCaption"></select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">{{ _('Finish at') }}</label>
+        <div class="controls">
+          <input type="time" class="input-small" step="300" data-bind="value: endTime, valueUpdate: 'input'">
+          <span class="help-inline">{{ _('if that time has already passed, tomorrow') }}</span>
+        </div>
+      </div>
+
+      <div class="control-group" data-bind="visible: preview() || error()">
+        <div class="controls">
+          <div class="alert alert-success finishat-preview" data-bind="visible: preview()">
+            {{ _('Starts') }} <strong data-bind="text: previewStartLabel"></strong>
+            {{ _('and finishes') }} <strong data-bind="text: previewEndLabel"></strong>.<br>
+            <small>
+              {{ _('Slicer estimate') }} <span data-bind="text: preview() && preview().estimate_label"></span>,
+              {{ _('with margin and heat-up') }} <span data-bind="text: preview() && preview().planned_label"></span>.
+            </small>
+          </div>
+          <div class="alert alert-error" data-bind="visible: error(), text: error"></div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="controls">
+          <label class="checkbox">
+            <input type="checkbox" data-bind="checked: bedClear">
+            {{ _('The bed is clear and clean and the filament is loaded') }}
+          </label>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn btn-primary" data-bind="enable: canSchedule">
+            <i class="fas fa-clock"></i> {{ _('Schedule') }}
+          </button>
+          <span class="help-inline" data-bind="visible: !psucontrol()">
+            {{ _('PSU Control not found: the printer must already be on and connected.') }}
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Last result -->
+  <div data-bind="visible: last()">
+    <hr>
+    <p class="muted">
+      {{ _('Last result:') }}
+      <span data-bind="css: lastClass, text: last() && last().message"></span>
+    </p>
+  </div>
+</div>

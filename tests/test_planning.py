@@ -5,8 +5,9 @@ import tempfile
 import unittest
 from zoneinfo import ZoneInfo
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "octoprint_pianifica"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "octoprint_finishat"))
 import planning  # noqa: E402
+import gettext  # noqa: E402
 
 ROME = ZoneInfo("Europe/Rome")
 
@@ -59,15 +60,15 @@ class PlanTests(unittest.TestCase):
         # 2268 * 1.05 + 240 = 2621 s -> partenza 15:16:19
         self.assertEqual(plan.planned_s, 2621)
         self.assertEqual(plan.start, dt.datetime(2026, 11, 22, 15, 16, 19, tzinfo=ROME))
-        d = plan.to_dict(self.now)
-        self.assertEqual(d["start_label"], "oggi alle 15:16")
-        self.assertEqual(d["end_label"], "oggi alle 16:00")
+        self.assertEqual(planning.day_label(plan.start, self.now), "today at 15:16")
+        d = plan.to_dict()
+        self.assertEqual(d["planned_label"], "43 min")
 
     def test_too_late(self):
         end = planning.parse_end_time("14:20", self.now)
         with self.assertRaises(planning.PlanError) as cm:
             planning.make_plan(2268, end, self.now)
-        self.assertIn("Troppo tardi", str(cm.exception))
+        self.assertIn("Too late", str(cm.exception))
 
     def test_dst_change(self):
         # Notte del cambio ora (25/10/2026, alle 3 si torna alle 2): una stampa
@@ -78,6 +79,25 @@ class PlanTests(unittest.TestCase):
         plan = planning.make_plan(14400, end, now, margin_percent=0, heatup_minutes=0)
         self.assertEqual(end.timestamp() - plan.start.timestamp(), 14400)
         self.assertEqual((plan.start.hour, plan.start.utcoffset()), (2, dt.timedelta(hours=2)))
+
+
+class ItalianTests(unittest.TestCase):
+    """The compiled Italian catalog is picked up by the gettext module."""
+
+    def setUp(self):
+        localedir = os.path.join(os.path.dirname(__file__), "..", "octoprint_finishat", "translations")
+        self._ = gettext.translation("messages", localedir=localedir, languages=["it"]).gettext
+        self.now = dt.datetime(2026, 11, 22, 14, 0, tzinfo=ROME)
+
+    def test_day_label(self):
+        when = dt.datetime(2026, 11, 23, 9, 5, tzinfo=ROME)
+        self.assertEqual(planning.day_label(when, self.now, self._), "domani alle 09:05")
+
+    def test_too_late_message(self):
+        end = planning.parse_end_time("14:20", self.now, self._)
+        with self.assertRaises(planning.PlanError) as cm:
+            planning.make_plan(2268, end, self.now, _=self._)
+        self.assertTrue(str(cm.exception).startswith("Troppo tardi: la stampa dura circa 43 min."))
 
 
 if __name__ == "__main__":

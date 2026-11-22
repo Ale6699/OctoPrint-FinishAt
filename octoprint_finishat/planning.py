@@ -1,6 +1,8 @@
-"""Calcoli puri per la pianificazione: nessuna dipendenza da OctoPrint.
+"""Pure scheduling maths, with no OctoPrint dependency.
 
-Tenuti separati da ``__init__.py`` così si possono provare senza OctoPrint.
+Kept apart from ``__init__.py`` so it can be tested without OctoPrint.
+Functions that produce user-facing text take a ``_`` translator
+(``gettext``-style); it defaults to returning the English text unchanged.
 """
 
 from __future__ import annotations
@@ -8,10 +10,17 @@ from __future__ import annotations
 import datetime as dt
 import re
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable, Optional
+
+Translator = Callable[[str], str]
+
+
+def _identity(text: str) -> str:
+    return text
+
 
 # PrusaSlicer:  "; estimated printing time (normal mode) = 1h 2m 3s"
-# Cura/altri:   "; estimated printing time = 1d 2h 3m 4s"
+# Others:       "; estimated printing time = 1d 2h 3m 4s"
 _ESTIMATE_RE = re.compile(
     r"^;\s*estimated printing time(?: \(normal mode\))?\s*=\s*(.+?)\s*$",
     re.IGNORECASE | re.MULTILINE,
@@ -23,7 +32,7 @@ _UNITS = {"d": 86400, "h": 3600, "m": 60, "s": 1}
 
 
 def parse_duration(text: str) -> Optional[int]:
-    """Converte "1d 2h 3m 4s" (anche parziale) in secondi."""
+    """Turn "1d 2h 3m 4s" (or any part of it) into seconds."""
     parts = re.findall(r"(\d+)\s*([dhms])\b", text.lower())
     if not parts:
         return None
@@ -31,7 +40,7 @@ def parse_duration(text: str) -> Optional[int]:
 
 
 def estimate_from_gcode_text(text: str) -> Optional[int]:
-    """Cerca nel testo del G-code la stima dello slicer, in secondi."""
+    """Find the slicer's print time estimate in G-code text, in seconds."""
     m = _ESTIMATE_RE.search(text)
     if m:
         secs = parse_duration(m.group(1))
@@ -44,7 +53,7 @@ def estimate_from_gcode_text(text: str) -> Optional[int]:
 
 
 def estimate_from_file(path: str, chunk: int = 256 * 1024) -> Optional[int]:
-    """Legge solo inizio e fine del file: la stima sta in uno dei due."""
+    """Read only the start and end of the file: the estimate is in one of them."""
     with open(path, "rb") as f:
         head = f.read(chunk)
         f.seek(0, 2)
@@ -60,7 +69,7 @@ def estimate_from_file(path: str, chunk: int = 256 * 1024) -> Optional[int]:
     return None
 
 
-def format_duration(secs: int) -> str:
+def format_duration(secs: float) -> str:
     secs = int(round(secs))
     h, rem = divmod(secs, 3600)
     m = rem // 60
@@ -71,19 +80,19 @@ def format_duration(secs: int) -> str:
     return f"{max(m, 1)} min"
 
 
-def day_label(when: dt.datetime, now: dt.datetime) -> str:
+def day_label(when: dt.datetime, now: dt.datetime, _: Translator = _identity) -> str:
     delta = (when.date() - now.date()).days
     if delta == 0:
-        day = "oggi"
+        day = _("today")
     elif delta == 1:
-        day = "domani"
+        day = _("tomorrow")
     else:
         day = when.strftime("%d/%m")
-    return f"{day} alle {when.strftime('%H:%M')}"
+    return _("{day} at {time}").format(day=day, time=when.strftime("%H:%M"))
 
 
 class PlanError(ValueError):
-    """Errore da mostrare all'utente così com'è."""
+    """An error whose message is shown to the user as is."""
 
 
 @dataclass
@@ -93,12 +102,10 @@ class Plan:
     estimate_s: int
     planned_s: int
 
-    def to_dict(self, now: dt.datetime) -> dict:
+    def to_dict(self) -> dict:
         return {
             "start_ts": self.start.timestamp(),
             "end_ts": self.end.timestamp(),
-            "start_label": day_label(self.start, now),
-            "end_label": day_label(self.end, now),
             "estimate_s": self.estimate_s,
             "estimate_label": format_duration(self.estimate_s),
             "planned_s": self.planned_s,
@@ -106,10 +113,10 @@ class Plan:
         }
 
 
-def parse_end_time(value: str, now: dt.datetime) -> dt.datetime:
-    """"16:00" -> prossima occorrenza (oggi se non è passata, altrimenti domani).
+def parse_end_time(value: str, now: dt.datetime, _: Translator = _identity) -> dt.datetime:
+    """"16:00" -> next occurrence (today if still ahead, otherwise tomorrow).
 
-    Accetta anche "YYYY-MM-DDTHH:MM" per una data precisa.
+    Also accepts "YYYY-MM-DDTHH:MM" for a specific date.
     """
     value = (value or "").strip()
     tz = now.tzinfo
@@ -119,13 +126,13 @@ def parse_end_time(value: str, now: dt.datetime) -> dt.datetime:
         try:
             return dt.datetime(y, mo, d, h, mi, tzinfo=tz)
         except ValueError as e:
-            raise PlanError(f"Data non valida: {value}") from e
+            raise PlanError(_("Invalid date: {value}").format(value=value)) from e
     m = re.fullmatch(r"(\d{1,2})[:.](\d{2})", value)
     if not m:
-        raise PlanError("Scrivi l'ora di fine nel formato HH:MM, per esempio 16:00.")
+        raise PlanError(_("Enter the finish time as HH:MM, for example 16:00."))
     h, mi = int(m.group(1)), int(m.group(2))
     if h > 23 or mi > 59:
-        raise PlanError(f"Ora non valida: {value}")
+        raise PlanError(_("Invalid time: {value}").format(value=value))
     end = now.replace(hour=h, minute=mi, second=0, microsecond=0)
     if end <= now:
         end += dt.timedelta(days=1)
@@ -133,24 +140,26 @@ def parse_end_time(value: str, now: dt.datetime) -> dt.datetime:
 
 
 def make_plan(
-    estimate_s: int,
+    estimate_s: Optional[int],
     end: dt.datetime,
     now: dt.datetime,
     margin_percent: float = 5.0,
     heatup_minutes: float = 4.0,
     min_lead_seconds: int = 60,
+    _: Translator = _identity,
 ) -> Plan:
-    """Calcola l'ora di partenza per finire a ``end``."""
+    """Work out when to start so that the print finishes at ``end``."""
     if not estimate_s or estimate_s <= 0:
-        raise PlanError("Non trovo il tempo stimato in questo file.")
+        raise PlanError(_("Couldn't find the estimated print time in this file."))
     planned = int(round(estimate_s * (1 + margin_percent / 100.0) + heatup_minutes * 60))
-    # Calcolo in UTC: con il fuso locale la sottrazione sarebbe "da orologio"
-    # e sbaglierebbe di un'ora nelle notti del cambio ora.
+    # Work in UTC: subtracting in local time is "wall clock" arithmetic and
+    # would be an hour off on the nights the clocks change.
     start = (end.astimezone(dt.timezone.utc) - dt.timedelta(seconds=planned)).astimezone(end.tzinfo)
     if start < now + dt.timedelta(seconds=min_lead_seconds):
         earliest = now + dt.timedelta(seconds=planned + min_lead_seconds)
         raise PlanError(
-            f"Troppo tardi: la stampa dura circa {format_duration(planned)}. "
-            f"Partendo adesso finirebbe {day_label(earliest, now)}."
+            _("Too late: the print takes about {duration}. Starting now it would finish {when}.").format(
+                duration=format_duration(planned), when=day_label(earliest, now, _)
+            )
         )
     return Plan(start=start, end=end, estimate_s=int(estimate_s), planned_s=planned)

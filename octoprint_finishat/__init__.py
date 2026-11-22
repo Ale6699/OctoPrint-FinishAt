@@ -1,8 +1,9 @@
-"""OctoPrint-Pianifica: avvia una stampa in modo che finisca a un'ora scelta."""
+"""OctoPrint-FinishAt: start a print so that it finishes at the time you choose."""
 
 from __future__ import annotations
 
 import datetime as dt
+import gettext
 import json
 import os
 import threading
@@ -22,8 +23,17 @@ try:
 except ImportError:  # pragma: no cover - Python < 3.9
     ZoneInfo = None
 
+_TRANSLATIONS_DIR = os.path.join(os.path.dirname(__file__), "translations")
 
-class PianificaPlugin(
+
+def _normalize_lang(lang: Optional[str]) -> str:
+    """"it-IT" / "it_IT" / "it" -> "it"; anything empty -> "en"."""
+    if not lang:
+        return "en"
+    return lang.replace("-", "_").split("_")[0].lower() or "en"
+
+
+class FinishAtPlugin(
     octoprint.plugin.StartupPlugin,
     octoprint.plugin.ShutdownPlugin,
     octoprint.plugin.SettingsPlugin,
@@ -38,6 +48,20 @@ class PianificaPlugin(
         self._lock = threading.RLock()
         self._launching = False
         self._estimate_cache: dict = {}
+        self._translators: dict = {}
+
+    # ------------------------------------------------------------------
+    # Translations (also used outside requests, e.g. for Telegram)
+    # ------------------------------------------------------------------
+
+    def _translator(self, lang: Optional[str]):
+        lang = _normalize_lang(lang)
+        if lang not in self._translators:
+            t = gettext.translation(
+                "messages", localedir=_TRANSLATIONS_DIR, languages=[lang], fallback=True
+            )
+            self._translators[lang] = t.gettext
+        return self._translators[lang]
 
     # ------------------------------------------------------------------
     # Settings
@@ -45,30 +69,30 @@ class PianificaPlugin(
 
     def get_settings_defaults(self):
         return {
-            "timezone": "Europe/Rome",
-            "margin_percent": 5,  # scarto misurato sulla stima di PrusaSlicer
-            "heatup_minutes": 4,  # riscaldamento ugello e piatto
+            "timezone": "",  # empty: the browser's time zone, sent when scheduling
+            "margin_percent": 5,  # added to the slicer's estimate
+            "heatup_minutes": 4,  # nozzle and bed heat-up
             "connect_timeout_seconds": 180,
-            "late_tolerance_minutes": 10,  # oltre questo ritardo non parte più
-            "telegram": True,  # avvisi via plugin Telegram, se installato
-            # Salvati come stringhe JSON: un dict sotto un default None fa
-            # protestare il sistema di impostazioni di OctoPrint.
+            "late_tolerance_minutes": 10,  # later than this, the print doesn't start
+            "telegram": True,  # notifications through the Telegram plugin, if installed
+            # Stored as JSON strings: OctoPrint's settings system dislikes
+            # arbitrary dicts under a None default.
             "job_json": "",
             "last_json": "",
         }
 
-    def _tz(self):
-        name = self._settings.get(["timezone"]) or "Europe/Rome"
-        if ZoneInfo is None:
-            return dt.timezone.utc
-        try:
-            return ZoneInfo(name)
-        except Exception:
-            self._logger.warning("Fuso orario %s non valido, uso Europe/Rome", name)
-            return ZoneInfo("Europe/Rome")
+    def get_settings_restricted_paths(self):
+        return {"never": [["job_json"], ["last_json"]]}
 
-    def _now(self) -> dt.datetime:
-        return dt.datetime.now(self._tz())
+    def _zone(self, name: Optional[str]):
+        """The requested time zone, or the configured one, or the server's."""
+        for candidate in (name, self._settings.get(["timezone"])):
+            if candidate and ZoneInfo is not None:
+                try:
+                    return ZoneInfo(candidate)
+                except Exception:
+                    self._logger.warning("Unknown time zone %r, ignoring it", candidate)
+        return dt.datetime.now().astimezone().tzinfo
 
     def _load_json(self, key: str) -> Optional[dict]:
         raw = self._settings.get([key])
@@ -77,7 +101,7 @@ class PianificaPlugin(
         try:
             value = json.loads(raw)
         except ValueError:
-            self._logger.warning("Valore non valido in %s, lo ignoro", key)
+            self._logger.warning("Invalid value in %s, ignoring it", key)
             return None
         return value if isinstance(value, dict) else None
 
@@ -97,32 +121,17 @@ class PianificaPlugin(
     def _set_last(self, status: str, message: str):
         self._save_json("last_json", {"status": status, "message": message, "ts": time.time()})
 
-    def _drop_old_settings(self):
-        """Toglie le chiavi "job"/"last" della versione 0.1.0 (dict sotto default None)."""
-        # Senza default, get() non le vede: si guarda direttamente la configurazione.
-        stored = self._settings.global_get(["plugins", self._identifier]) or {}
-        old = [key for key in ("job", "last") if key in stored]
-        for key in old:
-            try:
-                self._settings.global_remove(["plugins", self._identifier, key])
-            except Exception:
-                self._logger.exception("Impossibile togliere la vecchia chiave %s", key)
-        if old:
-            self._settings.save()
-            self._logger.info("Tolte le vecchie impostazioni: %s", ", ".join(old))
-
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
 
     def on_after_startup(self):
-        self._drop_old_settings()
         job = self._get_job()
         if job:
             self._logger.info(
-                "Pianificazione in attesa: %s, partenza %s",
+                "Scheduled print waiting: %s, start at %s",
                 job.get("path"),
-                dt.datetime.fromtimestamp(job["start_ts"], self._tz()).isoformat(),
+                dt.datetime.fromtimestamp(job["start_ts"], self._zone(job.get("tz"))).isoformat(),
             )
         self._timer = RepeatedTimer(self.TICK_SECONDS, self._tick, daemon=True)
         self._timer.start()
@@ -136,10 +145,13 @@ class PianificaPlugin(
     # ------------------------------------------------------------------
 
     def get_assets(self):
-        return {"js": ["js/pianifica.js"], "css": ["css/pianifica.css"]}
+        return {"js": ["js/finishat.js"], "css": ["css/finishat.css"]}
 
     def get_template_configs(self):
-        return [{"type": "tab", "name": "Pianifica", "custom_bindings": True}]
+        return [
+            {"type": "tab", "name": "Finish At", "custom_bindings": True},
+            {"type": "settings", "name": "Finish At", "custom_bindings": False},
+        ]
 
     def is_template_autoescaped(self):
         return True
@@ -178,7 +190,7 @@ class PianificaPlugin(
         return result
 
     def _estimate(self, path: str) -> Optional[int]:
-        """Stima dello slicer; se manca, quella dell'analisi di OctoPrint."""
+        """The slicer's estimate; failing that, OctoPrint's own analysis."""
         try:
             disk = self._file_manager.path_on_disk(FileDestinations.LOCAL, path)
             mtime = os.path.getmtime(disk)
@@ -191,7 +203,7 @@ class PianificaPlugin(
         try:
             est = planning.estimate_from_file(disk)
         except Exception:
-            self._logger.exception("Impossibile leggere la stima da %s", path)
+            self._logger.exception("Couldn't read the estimate from %s", path)
         if not est:
             try:
                 meta = self._file_manager.get_metadata(FileDestinations.LOCAL, path) or {}
@@ -202,17 +214,18 @@ class PianificaPlugin(
         self._estimate_cache[key] = est
         return est
 
-    def _plan(self, path: str, end_value: str) -> planning.Plan:
+    def _plan(self, path: str, end_value: str, tz, _) -> planning.Plan:
         if not path or not self._file_manager.file_exists(FileDestinations.LOCAL, path):
-            raise planning.PlanError("File non trovato su OctoPrint.")
-        now = self._now()
-        end = planning.parse_end_time(end_value, now)
+            raise planning.PlanError(_("File not found on OctoPrint."))
+        now = dt.datetime.now(tz)
+        end = planning.parse_end_time(end_value, now, _)
         return planning.make_plan(
             self._estimate(path),
             end,
             now,
             margin_percent=float(self._settings.get(["margin_percent"])),
             heatup_minutes=float(self._settings.get(["heatup_minutes"])),
+            _=_,
         )
 
     # ------------------------------------------------------------------
@@ -234,32 +247,34 @@ class PianificaPlugin(
             flask.abort(403)
         return flask.jsonify(self._state())
 
+    @staticmethod
+    def _error(message: str, status: int):
+        return flask.make_response(flask.jsonify(error=message), status)
+
     def on_api_command(self, command, data):
         if not Permissions.PRINT.can():
             flask.abort(403)
+        lang = data.get("lang")
+        _ = self._translator(lang)
+        tz = self._zone(data.get("tz"))
 
         if command == "preview":
             try:
-                plan = self._plan(data.get("path"), data.get("end"))
+                plan = self._plan(data.get("path"), data.get("end"), tz, _)
             except planning.PlanError as e:
                 return flask.jsonify(error=str(e))
-            return flask.jsonify(plan.to_dict(self._now()))
+            return flask.jsonify(plan.to_dict())
 
         if command == "schedule":
             if data.get("bed_clear") is not True:
-                return flask.make_response(
-                    flask.jsonify(error="Conferma che il piatto è libero e pulito."), 400
-                )
+                return self._error(_("Confirm that the bed is clear and clean."), 400)
             with self._lock:
                 if self._get_job():
-                    return flask.make_response(
-                        flask.jsonify(error="C'è già una stampa pianificata: annullala prima."),
-                        409,
-                    )
+                    return self._error(_("A print is already scheduled: cancel it first."), 409)
                 try:
-                    plan = self._plan(data.get("path"), data.get("end"))
+                    plan = self._plan(data.get("path"), data.get("end"), tz, _)
                 except planning.PlanError as e:
-                    return flask.make_response(flask.jsonify(error=str(e)), 400)
+                    return self._error(str(e), 400)
                 job = {
                     "path": data["path"],
                     "start_ts": plan.start.timestamp(),
@@ -268,12 +283,15 @@ class PianificaPlugin(
                     "planned_s": plan.planned_s,
                     "created_ts": time.time(),
                     "user": self._current_user_name(),
+                    "tz": getattr(tz, "key", None),
+                    "lang": _normalize_lang(lang),
                 }
                 self._set_job(job)
-            now = self._now()
-            msg = (
-                f"Pianificata {job['path']}: parte {planning.day_label(plan.start, now)}, "
-                f"finisce {planning.day_label(plan.end, now)}"
+            now = dt.datetime.now(tz)
+            msg = _("Scheduled {file}: starts {start}, finishes {end}").format(
+                file=job["path"],
+                start=planning.day_label(plan.start, now, _),
+                end=planning.day_label(plan.end, now, _),
             )
             self._logger.info(msg)
             self._notify(msg, "success", telegram=True)
@@ -285,37 +303,28 @@ class PianificaPlugin(
                 if not job:
                     return flask.jsonify(self._state())
                 if self._launching:
-                    return flask.make_response(
-                        flask.jsonify(error="La stampa sta già partendo: fermala da OctoPrint."),
-                        409,
+                    return self._error(
+                        _("The print is already starting: stop it from OctoPrint."), 409
                     )
                 self._set_job(None)
-            msg = f"Pianificazione annullata: {job['path']}"
+            msg = _("Schedule cancelled: {file}").format(file=job["path"])
             self._set_last("cancelled", msg)
             self._logger.info(msg)
             self._notify(msg, "info", telegram=True)
             return flask.jsonify(self._state())
 
-        return flask.make_response(flask.jsonify(error="Comando sconosciuto"), 400)
+        return self._error(_("Unknown command"), 400)
 
     def _state(self) -> dict:
-        now = self._now()
         job = self._get_job()
         if job:
             job = dict(job)
-            job["start_label"] = planning.day_label(
-                dt.datetime.fromtimestamp(job["start_ts"], now.tzinfo), now
-            )
-            job["end_label"] = planning.day_label(
-                dt.datetime.fromtimestamp(job["end_ts"], now.tzinfo), now
-            )
             job["launching"] = self._launching
         return {
             "files": self._list_gcode_files(),
             "job": job,
             "last": self._get_last(),
-            "now_ts": now.timestamp(),
-            "timezone": str(now.tzinfo),
+            "now_ts": time.time(),
             "psucontrol": self._psu() is not None,
         }
 
@@ -344,9 +353,12 @@ class PianificaPlugin(
             tolerance = float(self._settings.get(["late_tolerance_minutes"])) * 60
             if late > tolerance:
                 self._set_job(None)
+                _ = self._translator(job.get("lang"))
                 self._fail(
-                    f"Partenza mancata per {job['path']}: OctoPrint non era attivo all'ora "
-                    f"prevista (ritardo {planning.format_duration(late)}). Non la avvio."
+                    _(
+                        "Missed start for {file}: OctoPrint was not running at the planned "
+                        "time ({delay} late). Not starting it."
+                    ).format(file=job["path"], delay=planning.format_duration(late))
                 )
                 return
             self._launching = True
@@ -354,26 +366,25 @@ class PianificaPlugin(
 
     def _psu(self) -> Optional[dict]:
         try:
-            return self._plugin_manager.get_helpers(
-                "psucontrol", "get_psu_state", "turn_psu_on"
-            )
+            return self._plugin_manager.get_helpers("psucontrol", "get_psu_state", "turn_psu_on")
         except Exception:
             return None
 
     def _launch(self, job: dict):
         path = job["path"]
+        _ = self._translator(job.get("lang"))
         try:
-            self._logger.info("Avvio pianificato di %s", path)
+            self._logger.info("Scheduled start of %s", path)
             if self._printer.is_printing() or self._printer.is_paused():
-                self._fail(f"Non avvio {path}: la stampante sta già stampando.")
+                self._fail(_("Not starting {file}: the printer is already printing.").format(file=path))
                 return
             if not self._file_manager.file_exists(FileDestinations.LOCAL, path):
-                self._fail(f"Non avvio {path}: il file non c'è più su OctoPrint.")
+                self._fail(_("Not starting {file}: the file is no longer on OctoPrint.").format(file=path))
                 return
 
             psu = self._psu()
             if psu and not psu["get_psu_state"]():
-                self._logger.info("Accendo la stampante con PSU Control")
+                self._logger.info("Powering on the printer through PSU Control")
                 psu["turn_psu_on"]()
 
             timeout = float(self._settings.get(["connect_timeout_seconds"]))
@@ -383,30 +394,33 @@ class PianificaPlugin(
                 if self._printer.is_ready():
                     break
                 if self._printer.is_printing() or self._printer.is_paused():
-                    self._fail(f"Non avvio {path}: la stampante sta già stampando.")
+                    self._fail(
+                        _("Not starting {file}: the printer is already printing.").format(file=path)
+                    )
                     return
                 if self._printer.is_closed_or_error() and (
                     tried_connect_at is None or time.time() - tried_connect_at > 60
                 ):
-                    self._logger.info("Stampante non connessa, provo a connettermi")
+                    self._logger.info("Printer not connected, trying to connect")
                     tried_connect_at = time.time()
                     self._printer.connect()
                 time.sleep(2)
             else:
                 self._fail(
-                    f"Non avvio {path}: la stampante non risponde dopo "
-                    f"{planning.format_duration(timeout)}."
+                    _("Not starting {file}: the printer did not respond within {duration}.").format(
+                        file=path, duration=planning.format_duration(timeout)
+                    )
                 )
                 return
 
             self._printer.select_file(path, False, printAfterSelect=True, user=job.get("user"))
-            msg = f"Stampa pianificata partita: {path}"
+            msg = _("Scheduled print started: {file}").format(file=path)
             self._logger.info(msg)
             self._set_last("started", msg)
-            self._notify(msg, "success", telegram=False)  # Telegram avvisa già all'avvio
+            self._notify(msg, "success", telegram=False)  # Telegram already announces print starts
         except Exception as e:
-            self._logger.exception("Errore durante l'avvio pianificato")
-            self._fail(f"Errore durante l'avvio di {path}: {e}")
+            self._logger.exception("Error during the scheduled start")
+            self._fail(_("Error while starting {file}: {error}").format(file=path, error=e))
         finally:
             with self._lock:
                 self._launching = False
@@ -427,27 +441,46 @@ class PianificaPlugin(
                 self._identifier, {"message": message, "level": level}
             )
         except Exception:
-            self._logger.exception("Invio del messaggio all'interfaccia fallito")
+            self._logger.exception("Couldn't send the message to the UI")
         if telegram and self._settings.get_boolean(["telegram"]):
             self._telegram(message)
 
     def _telegram(self, message: str):
-        """Usa la notifica "UserNotif" del plugin Telegram, se installato."""
+        """Use the Telegram plugin's "User Notification" message, if installed."""
         try:
             info = self._plugin_manager.get_plugin_info("telegram")
             if info and info.enabled and info.implementation:
-                info.implementation.on_event("UserNotif", {"UserNotif": f"[Pianifica] {message}"})
+                info.implementation.on_event("UserNotif", {"UserNotif": f"[Finish At] {message}"})
         except Exception:
-            self._logger.exception("Invio a Telegram fallito")
+            self._logger.exception("Couldn't send the Telegram notification")
+
+    # ------------------------------------------------------------------
+    # Software update
+    # ------------------------------------------------------------------
+
+    def get_update_information(self):
+        return {
+            "finishat": {
+                "displayName": "Finish At",
+                "displayVersion": self._plugin_version,
+                "type": "github_release",
+                "user": "Ale6699",
+                "repo": "OctoPrint-FinishAt",
+                "current": self._plugin_version,
+                "pip": "https://github.com/Ale6699/OctoPrint-FinishAt/archive/{target_version}.zip",
+            }
+        }
 
 
-__plugin_name__ = "Pianifica"
+__plugin_name__ = "Finish At"
 __plugin_pythoncompat__ = ">=3.8,<4"
 
 
 def __plugin_load__():
     global __plugin_implementation__
-    __plugin_implementation__ = PianificaPlugin()
+    __plugin_implementation__ = FinishAtPlugin()
 
-
-__plugin_hooks__ = {}
+    global __plugin_hooks__
+    __plugin_hooks__ = {
+        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
+    }

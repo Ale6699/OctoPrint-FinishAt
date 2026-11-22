@@ -3,20 +3,30 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "OctoPrint-Pianifica"
-version = "0.1.0"
-description = "Pianifica una stampa scegliendo l'ora a cui deve finire."
+name = "OctoPrint-FinishAt"
+version = "0.2.0"
+description = "Schedule a print by choosing the time it should finish."
 readme = "README.md"
 license = { text = "AGPL-3.0-or-later" }
+authors = [{ name = "Ale6699" }]
 requires-python = ">=3.8,<4"
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/Ale6699/OctoPrint-FinishAt"
+
 [project.entry-points."octoprint.plugin"]
-pianifica = "octoprint_pianifica"
+finishat = "octoprint_finishat"
 
 [tool.setuptools]
-packages = ["octoprint_pianifica"]
+packages = ["octoprint_finishat"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-octoprint_pianifica = ["templates/*.jinja2", "static/js/*.js", "static/css/*.css"]
+octoprint_finishat = [
+    "templates/*.jinja2",
+    "static/js/*.js",
+    "static/css/*.css",
+    "translations/*/LC_MESSAGES/*.po",
+    "translations/*/LC_MESSAGES/*.mo",
+]

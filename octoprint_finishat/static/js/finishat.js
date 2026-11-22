@@ -1,8 +1,37 @@
 /*
- * OctoPrint-Pianifica: pannello per avviare una stampa in modo che finisca a un'ora scelta.
+ * OctoPrint-FinishAt: start a print so that it finishes at the time you choose.
  */
 $(function () {
-    function PianificaViewModel(parameters) {
+    function browserLang() {
+        if (typeof LOCALE !== "undefined" && LOCALE) return LOCALE;
+        return navigator.language || "en";
+    }
+
+    function browserTz() {
+        try {
+            return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        } catch (e) {
+            return "";
+        }
+    }
+
+    function whenLabel(ts) {
+        if (!ts) return "";
+        var d = new Date(ts * 1000);
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var day0 = new Date(d.getTime());
+        day0.setHours(0, 0, 0, 0);
+        var diff = Math.round((day0 - today) / 86400000);
+        var day;
+        if (diff === 0) day = gettext("today");
+        else if (diff === 1) day = gettext("tomorrow");
+        else day = d.toLocaleDateString(browserLang(), { day: "2-digit", month: "2-digit" });
+        var time = d.toLocaleTimeString(browserLang(), { hour: "2-digit", minute: "2-digit" });
+        return _.sprintf(gettext("%(day)s at %(time)s"), { day: day, time: time });
+    }
+
+    function FinishAtViewModel(parameters) {
         var self = this;
         self.loginState = parameters[0];
 
@@ -18,9 +47,28 @@ $(function () {
         self.busy = ko.observable(false);
         self.nowTs = ko.observable(Date.now() / 1000);
 
+        self.chooseFileCaption = gettext("Choose a file…");
+
         self.fileLabel = function (f) {
-            return f.estimate_label ? f.name + " (" + f.estimate_label + ")" : f.name + " (durata sconosciuta)";
+            return f.estimate_label
+                ? f.name + " (" + f.estimate_label + ")"
+                : f.name + " " + gettext("(unknown duration)");
         };
+
+        self.jobStartLabel = ko.pureComputed(function () {
+            self.nowTs();
+            return self.job() ? whenLabel(self.job().start_ts) : "";
+        });
+        self.jobEndLabel = ko.pureComputed(function () {
+            self.nowTs();
+            return self.job() ? whenLabel(self.job().end_ts) : "";
+        });
+        self.previewStartLabel = ko.pureComputed(function () {
+            return self.preview() ? whenLabel(self.preview().start_ts) : "";
+        });
+        self.previewEndLabel = ko.pureComputed(function () {
+            return self.preview() ? whenLabel(self.preview().end_ts) : "";
+        });
 
         self.canSchedule = ko.pureComputed(function () {
             return !self.busy() && !!self.preview() && self.bedClear();
@@ -30,13 +78,13 @@ $(function () {
             var job = self.job();
             if (!job) return "";
             var secs = Math.round(job.start_ts - self.nowTs());
-            if (secs <= 0) return "(adesso)";
+            if (secs <= 0) return gettext("(now)");
             var h = Math.floor(secs / 3600);
             var m = Math.ceil((secs % 3600) / 60);
             if (m === 60) { h += 1; m = 0; }
-            if (h && m) return "(tra " + h + " h " + m + " min)";
-            if (h) return "(tra " + h + " h)";
-            return "(tra " + m + " min)";
+            if (h && m) return _.sprintf(gettext("(in %(h)d h %(m)d min)"), { h: h, m: m });
+            if (h) return _.sprintf(gettext("(in %(h)d h)"), { h: h });
+            return _.sprintf(gettext("(in %(m)d min)"), { m: m });
         });
 
         self.lastClass = ko.pureComputed(function () {
@@ -50,13 +98,17 @@ $(function () {
             self.job(r.job || null);
             self.last(r.last || null);
             self.psucontrol(!!r.psucontrol);
-            if (r.now_ts) self.nowTs(r.now_ts);
+            self.nowTs(Date.now() / 1000);
         };
 
         self.refresh = function () {
             if (!self.loginState.isUser()) return;
-            OctoPrint.simpleApiGet("pianifica").done(self.applyState);
+            OctoPrint.simpleApiGet("finishat").done(self.applyState);
         };
+
+        function payload(extra) {
+            return $.extend({ lang: browserLang(), tz: browserTz() }, extra);
+        }
 
         var previewTimer = null;
         self.requestPreview = function () {
@@ -69,7 +121,7 @@ $(function () {
                     self.error("");
                     return;
                 }
-                OctoPrint.simpleApiCommand("pianifica", "preview", { path: path, end: end })
+                OctoPrint.simpleApiCommand("finishat", "preview", payload({ path: path, end: end }))
                     .done(function (r) {
                         if (r.error) {
                             self.preview(null);
@@ -81,7 +133,7 @@ $(function () {
                     })
                     .fail(function () {
                         self.preview(null);
-                        self.error("Errore nel calcolo dell'orario.");
+                        self.error(gettext("Couldn't work out the start time."));
                     });
             }, 250);
         };
@@ -95,11 +147,11 @@ $(function () {
         self.schedule = function () {
             if (!self.canSchedule()) return;
             self.busy(true);
-            OctoPrint.simpleApiCommand("pianifica", "schedule", {
-                path: self.selected(),
-                end: self.endTime(),
-                bed_clear: self.bedClear()
-            })
+            OctoPrint.simpleApiCommand(
+                "finishat",
+                "schedule",
+                payload({ path: self.selected(), end: self.endTime(), bed_clear: self.bedClear() })
+            )
                 .done(function (r) {
                     self.applyState(r);
                     self.bedClear(false);
@@ -107,30 +159,34 @@ $(function () {
                     self.error("");
                 })
                 .fail(function (xhr) {
-                    self.error(errorText(xhr, "Pianificazione non riuscita."));
+                    self.error(errorText(xhr, gettext("Scheduling failed.")));
                 })
                 .always(function () { self.busy(false); });
         };
 
         self.cancel = function () {
             self.busy(true);
-            OctoPrint.simpleApiCommand("pianifica", "cancel", {})
+            OctoPrint.simpleApiCommand("finishat", "cancel", payload({}))
                 .done(self.applyState)
                 .fail(function (xhr) {
-                    new PNotify({ title: "Pianifica", text: errorText(xhr, "Annullamento non riuscito."), type: "error" });
+                    new PNotify({
+                        title: "Finish At",
+                        text: errorText(xhr, gettext("Cancelling failed.")),
+                        type: "error"
+                    });
                 })
                 .always(function () { self.busy(false); });
         };
 
-        // Aggiorna il conto alla rovescia e, ogni tanto, l'anteprima.
+        // Keep the countdown moving.
         setInterval(function () {
-            self.nowTs(self.nowTs() + 30);
+            self.nowTs(Date.now() / 1000);
         }, 30000);
 
         self.onStartupComplete = self.refresh;
         self.onUserLoggedIn = self.refresh;
         self.onTabChange = function (next) {
-            if (next === "#tab_plugin_pianifica") {
+            if (next === "#tab_plugin_finishat") {
                 self.refresh();
                 self.requestPreview();
             }
@@ -140,10 +196,10 @@ $(function () {
         self.onEventFileRemoved = self.refresh;
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
-            if (plugin !== "pianifica") return;
+            if (plugin !== "finishat") return;
             if (data.message) {
                 new PNotify({
-                    title: "Pianifica",
+                    title: "Finish At",
                     text: data.message,
                     type: data.level || "info",
                     hide: data.level !== "error"
@@ -154,8 +210,8 @@ $(function () {
     }
 
     OCTOPRINT_VIEWMODELS.push({
-        construct: PianificaViewModel,
+        construct: FinishAtViewModel,
         dependencies: ["loginStateViewModel"],
-        elements: ["#tab_plugin_pianifica"]
+        elements: ["#tab_plugin_finishat"]
     });
 });

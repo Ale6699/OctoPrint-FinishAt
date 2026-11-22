@@ -1,60 +1,66 @@
-# OctoPrint-Pianifica
+# OctoPrint-FinishAt
 
-Plugin per [OctoPrint](https://octoprint.org) che avvia una stampa **in modo che finisca all'ora che scegli**.
+An [OctoPrint](https://octoprint.org) plugin that starts a print **so that it finishes at the time you choose**.
 
-Scegli il file, scrivi per esempio "16:00", e il plugin calcola quando farla partire:
+Pick a file, type "16:00", and Finish At works out when to start:
 
-- legge la **stima dello slicer** dal G-code (PrusaSlicer, Cura); se manca usa l'analisi di OctoPrint;
-- aggiunge un **margine** (5% di default) e il tempo di **riscaldamento** (4 minuti di default);
-- all'ora di partenza **accende la stampante** con [PSU Control](https://plugins.octoprint.org/plugins/psucontrol/), se installato, aspetta che si connetta e **avvia la stampa**.
+- it reads the **slicer's estimate** from the G-code (PrusaSlicer, SuperSlicer, OrcaSlicer, Cura); if there is none it uses OctoPrint's own analysis;
+- it adds a **safety margin** (5% by default) and the **heat-up time** (4 minutes by default);
+- at start time it **powers the printer on** through [PSU Control](https://plugins.octoprint.org/plugins/psucontrol/) if installed (so it works with any smart plug or relay PSU Control supports), waits for the printer to connect, and **starts the print**.
 
-## Sicurezza
+<!-- TODO screenshot: extras/screenshot.png -->
 
-- Per pianificare devi confermare che **il piatto è libero e pulito**.
-- Se all'ora di partenza la stampante sta già stampando, non risponde o il file non c'è più, **non parte** e lo segnala.
-- Se OctoPrint era spento all'ora prevista e riparte più di 10 minuti dopo, la stampa **non parte** in ritardo.
-- La pianificazione è salvata nelle impostazioni e sopravvive ai riavvii.
+## Safety
 
-## Avvisi
+- To schedule a print you must confirm that **the bed is clear and clean**.
+- If, at start time, the printer is already printing, does not connect, or the file is gone, the print **does not start** and you are told why.
+- If OctoPrint was down at the planned start and comes back more than 10 minutes late, the print **does not start late**.
+- The schedule is saved in OctoPrint's settings, so it survives restarts.
+- Only users allowed to print can schedule or cancel.
 
-Gli esiti compaiono nell'interfaccia di OctoPrint. Se è installato il plugin
-[Telegram](https://github.com/jacopotediosi/OctoPrint-Telegram), arrivano anche lì, tramite la notifica
-"User Notification": deve essere attiva per la tua chat.
+## Notifications
 
-## Impostazioni
+Results show up as OctoPrint notifications. If the [Telegram plugin](https://github.com/jacopotediosi/OctoPrint-Telegram)
+is installed, they are also sent there through its "User Notification" message, which must be enabled for your chat.
+The print start and finish are announced by Telegram itself, as usual.
 
-Per ora si cambiano in `config.yaml`, sotto `plugins.pianifica`:
+## Installation
 
-| Chiave | Default | Significato |
-|---|---|---|
-| `timezone` | `Europe/Rome` | Fuso orario per interpretare l'ora di fine |
-| `margin_percent` | `5` | Margine aggiunto alla stima dello slicer |
-| `heatup_minutes` | `4` | Minuti di riscaldamento |
-| `connect_timeout_seconds` | `180` | Attesa massima per la connessione alla stampante |
-| `late_tolerance_minutes` | `10` | Oltre questo ritardo la stampa non parte |
-| `telegram` | `true` | Avvisi via plugin Telegram |
+In OctoPrint: **Settings → Plugin Manager → Get More → … from URL**, and paste:
 
-## Installazione
-
-Il repository è privato, quindi il Plugin Manager di OctoPrint non può scaricarlo da URL.
-Si installa copiando il sorgente nell'ambiente di OctoPrint e lanciando pip:
-
-```bash
-pip install --no-deps --upgrade /percorso/octoprint-pianifica
+```
+https://github.com/Ale6699/OctoPrint-FinishAt/archive/main.zip
 ```
 
-Con l'immagine Docker ufficiale `octoprint/octoprint` il comando va eseguito dentro il container
-(`docker exec octoprint ...`): lì `PIP_USER=true` installa in `/octoprint/plugins`, che sopravvive
-agli aggiornamenti dell'immagine. Dopo l'installazione va riavviato OctoPrint, a stampante ferma.
+Restart OctoPrint when asked. A **Finish At** tab appears next to the others.
 
-## Sviluppo
+## Settings
 
-I calcoli degli orari sono in `octoprint_pianifica/planning.py` e si provano senza OctoPrint:
+**Settings → Finish At**:
+
+| Setting | Default | |
+|---|---|---|
+| Margin on the slicer estimate | 5% | Added to the estimate so the print finishes a little early rather than late |
+| Heat-up time | 4 min | Nozzle and bed heat-up before the first layer |
+| Printer connection timeout | 180 s | How long to wait for the printer to connect after powering on |
+| Late start tolerance | 10 min | Later than this, a missed start is skipped |
+| Telegram notifications | on | Only if the Telegram plugin is installed |
+
+Times are read in your **browser's time zone** when you schedule, so it works even if OctoPrint's host
+(for example a Docker container) runs in UTC.
+
+## Languages
+
+English and Italian. Translations are welcome: see `translations_src/build_it.py` for how the Italian catalog is built.
+
+## Development
+
+The scheduling maths lives in `octoprint_finishat/planning.py` and can be tested without OctoPrint:
 
 ```bash
 python3 -m unittest discover -s tests
 ```
 
-## Licenza
+## License
 
-AGPL-3.0-or-later, come OctoPrint.
+[AGPL-3.0-or-later](LICENSE), like OctoPrint.

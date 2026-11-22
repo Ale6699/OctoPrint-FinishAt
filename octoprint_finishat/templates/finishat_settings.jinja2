@@ -1,0 +1,58 @@
+<h3>Finish At</h3>
+
+<form class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label">{{ _('Margin on the slicer estimate') }}</label>
+    <div class="controls">
+      <div class="input-append">
+        <input type="number" min="0" max="100" step="1" class="input-mini" data-bind="value: settings.plugins.finishat.margin_percent">
+        <span class="add-on">%</span>
+      </div>
+      <span class="help-block">{{ _('Added to the estimate, so the print finishes a little early rather than late.') }}</span>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">{{ _('Heat-up time') }}</label>
+    <div class="controls">
+      <div class="input-append">
+        <input type="number" min="0" max="60" step="1" class="input-mini" data-bind="value: settings.plugins.finishat.heatup_minutes">
+        <span class="add-on">min</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">{{ _('Printer connection timeout') }}</label>
+    <div class="controls">
+      <div class="input-append">
+        <input type="number" min="30" max="900" step="10" class="input-mini" data-bind="value: settings.plugins.finishat.connect_timeout_seconds">
+        <span class="add-on">s</span>
+      </div>
+      <span class="help-block">{{ _('How long to wait for the printer to connect after powering it on.') }}</span>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">{{ _('Late start tolerance') }}</label>
+    <div class="controls">
+      <div class="input-append">
+        <input type="number" min="1" max="120" step="1" class="input-mini" data-bind="value: settings.plugins.finishat.late_tolerance_minutes">
+        <span class="add-on">min</span>
+      </div>
+      <span class="help-block">{{ _('If OctoPrint was down at the planned start and comes back later than this, the print does not start.') }}</span>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <div class="controls">
+      <label class="checkbox">
+        <input type="checkbox" data-bind="checked: settings.plugins.finishat.telegram">
+        {{ _('Send notifications through the Telegram plugin') }}
+      </label>
+      <span class="help-block">{{ _('They arrive as the Telegram plugin\'s "User Notification" message, which must be enabled for your chat.') }}</span>
+    </div>
+  </div>
+
+  <p class="muted">{{ _("Times are read in your browser's time zone when you schedule a print.") }}</p>
+</form>

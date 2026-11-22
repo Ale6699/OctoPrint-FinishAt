@@ -1,0 +1,190 @@
+# Italian translations for OctoPrint-FinishAt.
+msgid ""
+msgstr ""
+"Project-Id-Version: OctoPrint-FinishAt\n"
+"PO-Revision-Date: 2026-11-22 00:00+0000\n"
+"Last-Translator: Ale6699\n"
+"Language-Team: Italian\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#, python-format
+msgid "%(day)s at %(time)s"
+msgstr "%(day)s alle %(time)s"
+
+#, python-format
+msgid "(in %(h)d h %(m)d min)"
+msgstr "(tra %(h)d h %(m)d min)"
+
+#, python-format
+msgid "(in %(h)d h)"
+msgstr "(tra %(h)d h)"
+
+#, python-format
+msgid "(in %(m)d min)"
+msgstr "(tra %(m)d min)"
+
+msgid "(now)"
+msgstr "(adesso)"
+
+msgid "(unknown duration)"
+msgstr "(durata sconosciuta)"
+
+msgid "A print is already scheduled: cancel it first."
+msgstr "C'è già una stampa pianificata: annullala prima."
+
+msgid "Added to the estimate, so the print finishes a little early rather than late."
+msgstr "Si aggiunge alla stima, così la stampa finisce un po' prima invece che in ritardo."
+
+msgid "Cancel schedule"
+msgstr "Annulla pianificazione"
+
+msgid "Cancelling failed."
+msgstr "Annullamento non riuscito."
+
+msgid "Choose a file…"
+msgstr "Scegli un file…"
+
+msgid "Confirm that the bed is clear and clean."
+msgstr "Conferma che il piatto è libero e pulito."
+
+msgid "Couldn't find the estimated print time in this file."
+msgstr "Non trovo il tempo stimato in questo file."
+
+msgid "Couldn't work out the start time."
+msgstr "Non riesco a calcolare l'ora di partenza."
+
+msgid "Enter the finish time as HH:MM, for example 16:00."
+msgstr "Scrivi l'ora di fine nel formato HH:MM, per esempio 16:00."
+
+msgid "Error while starting {file}: {error}"
+msgstr "Errore durante l'avvio di {file}: {error}"
+
+msgid "File"
+msgstr "File"
+
+msgid "File not found on OctoPrint."
+msgstr "File non trovato su OctoPrint."
+
+msgid "Finish at"
+msgstr "Deve finire alle"
+
+msgid "Heat-up time"
+msgstr "Tempo di riscaldamento"
+
+msgid "How long to wait for the printer to connect after powering it on."
+msgstr "Quanto aspettare che la stampante si connetta dopo averla accesa."
+
+msgid "If OctoPrint was down at the planned start and comes back later than this, the print does not start."
+msgstr "Se all'ora di partenza OctoPrint era spento e riparte più tardi di così, la stampa non parte."
+
+msgid "Invalid date: {value}"
+msgstr "Data non valida: {value}"
+
+msgid "Invalid time: {value}"
+msgstr "Ora non valida: {value}"
+
+msgid "Last result:"
+msgstr "Ultimo esito:"
+
+msgid "Late start tolerance"
+msgstr "Tolleranza sul ritardo"
+
+msgid "Margin on the slicer estimate"
+msgstr "Margine sulla stima dello slicer"
+
+msgid "Missed start for {file}: OctoPrint was not running at the planned time ({delay} late). Not starting it."
+msgstr "Partenza mancata per {file}: OctoPrint non era attivo all'ora prevista (ritardo {delay}). Non la avvio."
+
+msgid "Not starting {file}: the file is no longer on OctoPrint."
+msgstr "Non avvio {file}: il file non c'è più su OctoPrint."
+
+msgid "Not starting {file}: the printer did not respond within {duration}."
+msgstr "Non avvio {file}: la stampante non risponde dopo {duration}."
+
+msgid "Not starting {file}: the printer is already printing."
+msgstr "Non avvio {file}: la stampante sta già stampando."
+
+msgid "PSU Control not found: the printer must already be on and connected."
+msgstr "PSU Control non trovato: la stampante deve essere già accesa e connessa."
+
+msgid "Pick the file and the time you want it to finish: I'll work out when to start it."
+msgstr "Scegli il file e l'ora a cui vuoi che finisca: calcolo io quando farla partire."
+
+msgid "Printer connection timeout"
+msgstr "Attesa massima per la connessione"
+
+msgid "Schedule"
+msgstr "Pianifica"
+
+msgid "Schedule a print"
+msgstr "Pianifica una stampa"
+
+msgid "Schedule cancelled: {file}"
+msgstr "Pianificazione annullata: {file}"
+
+msgid "Scheduled print"
+msgstr "Stampa pianificata"
+
+msgid "Scheduled print started: {file}"
+msgstr "Stampa pianificata partita: {file}"
+
+msgid "Scheduled {file}: starts {start}, finishes {end}"
+msgstr "Pianificata {file}: parte {start}, finisce {end}"
+
+msgid "Scheduling failed."
+msgstr "Pianificazione non riuscita."
+
+msgid "Send notifications through the Telegram plugin"
+msgstr "Invia gli avvisi tramite il plugin Telegram"
+
+msgid "Slicer estimate"
+msgstr "Stima dello slicer"
+
+msgid "Starting: powering on the printer and connecting…"
+msgstr "Sta partendo: accendo la stampante e mi connetto…"
+
+msgid "Starts"
+msgstr "Parte"
+
+msgid "The bed is clear and clean and the filament is loaded"
+msgstr "Il piatto è libero e pulito e il filamento è caricato"
+
+msgid "The print is already starting: stop it from OctoPrint."
+msgstr "La stampa sta già partendo: fermala da OctoPrint."
+
+msgid "They arrive as the Telegram plugin's \"User Notification\" message, which must be enabled for your chat."
+msgstr "Arrivano come messaggio \"User Notification\" del plugin Telegram, che deve essere attivo per la tua chat."
+
+msgid "Times are read in your browser's time zone when you schedule a print."
+msgstr "Quando pianifichi una stampa, gli orari sono letti nel fuso orario del tuo browser."
+
+msgid "Too late: the print takes about {duration}. Starting now it would finish {when}."
+msgstr "Troppo tardi: la stampa dura circa {duration}. Partendo adesso finirebbe {when}."
+
+msgid "Unknown command"
+msgstr "Comando sconosciuto"
+
+msgid "and finishes"
+msgstr "e finisce"
+
+msgid "finishes"
+msgstr "finisce"
+
+msgid "if that time has already passed, tomorrow"
+msgstr "se l'ora è già passata, intendo domani"
+
+msgid "today"
+msgstr "oggi"
+
+msgid "tomorrow"
+msgstr "domani"
+
+msgid "with margin and heat-up"
+msgstr "con margine e riscaldamento"
+
+msgid "{day} at {time}"
+msgstr "{day} alle {time}"
