@@ -99,16 +99,17 @@ class PianificaPlugin(
 
     def _drop_old_settings(self):
         """Toglie le chiavi "job"/"last" della versione 0.1.0 (dict sotto default None)."""
-        changed = False
-        for key in ("job", "last"):
+        # Senza default, get() non le vede: si guarda direttamente la configurazione.
+        stored = self._settings.global_get(["plugins", self._identifier]) or {}
+        old = [key for key in ("job", "last") if key in stored]
+        for key in old:
             try:
-                if self._settings.get([key]) is not None:
-                    self._settings.remove([key])
-                    changed = True
+                self._settings.global_remove(["plugins", self._identifier, key])
             except Exception:
-                pass
-        if changed:
+                self._logger.exception("Impossibile togliere la vecchia chiave %s", key)
+        if old:
             self._settings.save()
+            self._logger.info("Tolte le vecchie impostazioni: %s", ", ".join(old))
 
     # ------------------------------------------------------------------
     # Lifecycle
