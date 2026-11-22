@@ -60,6 +60,9 @@ see `translations_src/build_it.py` for how the Italian catalog is built.
 
 ## Development
 
+This plugin was developed with the help of an AI assistant (Claude), and designed, tested on a real
+printer and maintained by its author. Tested with OctoPrint 1.11.
+
 The scheduling maths lives in `octoprint_finishat/planning.py` and can be tested without OctoPrint:
 
 ```bash

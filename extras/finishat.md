@@ -6,7 +6,7 @@ title: Finish At
 description: Schedule a print by choosing the time it should finish. Powers the printer on through PSU Control.
 authors:
 - Ale6699
-license: AGPL-3.0-or-later
+license: AGPLv3
 
 date: 2026-11-22
 
@@ -31,13 +31,16 @@ featuredimage: /assets/img/plugins/finishat/tab.png
 
 compatibility:
   octoprint:
-  - 1.8.0
+  - 1.11.0
   os:
   - linux
   - windows
   - macos
   - freebsd
-  python: ">=3.8,<4"
+  python: ">=3,<4"
+
+attributes:
+- ai-developed
 
 ---
 
