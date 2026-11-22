@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import json
 import os
 import threading
 import time
@@ -50,8 +51,10 @@ class PianificaPlugin(
             "connect_timeout_seconds": 180,
             "late_tolerance_minutes": 10,  # oltre questo ritardo non parte più
             "telegram": True,  # avvisi via plugin Telegram, se installato
-            "job": None,
-            "last": None,
+            # Salvati come stringhe JSON: un dict sotto un default None fa
+            # protestare il sistema di impostazioni di OctoPrint.
+            "job_json": "",
+            "last_json": "",
         }
 
     def _tz(self):
@@ -67,24 +70,52 @@ class PianificaPlugin(
     def _now(self) -> dt.datetime:
         return dt.datetime.now(self._tz())
 
+    def _load_json(self, key: str) -> Optional[dict]:
+        raw = self._settings.get([key])
+        if not raw:
+            return None
+        try:
+            value = json.loads(raw)
+        except ValueError:
+            self._logger.warning("Valore non valido in %s, lo ignoro", key)
+            return None
+        return value if isinstance(value, dict) else None
+
+    def _save_json(self, key: str, value: Optional[dict]):
+        self._settings.set([key], json.dumps(value) if value else "")
+        self._settings.save()
+
     def _get_job(self) -> Optional[dict]:
-        return self._settings.get(["job"])
+        return self._load_json("job_json")
 
     def _set_job(self, job: Optional[dict]):
-        self._settings.set(["job"], job, force=True)
-        self._settings.save()
+        self._save_json("job_json", job)
+
+    def _get_last(self) -> Optional[dict]:
+        return self._load_json("last_json")
 
     def _set_last(self, status: str, message: str):
-        self._settings.set(
-            ["last"], {"status": status, "message": message, "ts": time.time()}, force=True
-        )
-        self._settings.save()
+        self._save_json("last_json", {"status": status, "message": message, "ts": time.time()})
+
+    def _drop_old_settings(self):
+        """Toglie le chiavi "job"/"last" della versione 0.1.0 (dict sotto default None)."""
+        changed = False
+        for key in ("job", "last"):
+            try:
+                if self._settings.get([key]) is not None:
+                    self._settings.remove([key])
+                    changed = True
+            except Exception:
+                pass
+        if changed:
+            self._settings.save()
 
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
 
     def on_after_startup(self):
+        self._drop_old_settings()
         job = self._get_job()
         if job:
             self._logger.info(
@@ -281,7 +312,7 @@ class PianificaPlugin(
         return {
             "files": self._list_gcode_files(),
             "job": job,
-            "last": self._settings.get(["last"]),
+            "last": self._get_last(),
             "now_ts": now.timestamp(),
             "timezone": str(now.tzinfo),
             "psucontrol": self._psu() is not None,

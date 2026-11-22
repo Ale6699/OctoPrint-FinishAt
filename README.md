@@ -36,13 +36,16 @@ Per ora si cambiano in `config.yaml`, sotto `plugins.pianifica`:
 
 ## Installazione
 
-Da OctoPrint: Impostazioni → Plugin Manager → Get More → "...from URL", con l'archivio zip del repository.
-
-Con pip, nello stesso ambiente di OctoPrint:
+Il repository è privato, quindi il Plugin Manager di OctoPrint non può scaricarlo da URL.
+Si installa copiando il sorgente nell'ambiente di OctoPrint e lanciando pip:
 
 ```bash
-pip install https://github.com/<utente>/OctoPrint-Pianifica/archive/main.zip
+pip install --no-deps --upgrade /percorso/octoprint-pianifica
 ```
+
+Con l'immagine Docker ufficiale `octoprint/octoprint` il comando va eseguito dentro il container
+(`docker exec octoprint ...`): lì `PIP_USER=true` installa in `/octoprint/plugins`, che sopravvive
+agli aggiornamenti dell'immagine. Dopo l'installazione va riavviato OctoPrint, a stampante ferma.
 
 ## Sviluppo
 
