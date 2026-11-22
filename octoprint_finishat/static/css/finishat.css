@@ -2,6 +2,18 @@
     margin-bottom: 0;
 }
 
+/* The file list fills the available width but never overflows the tab. */
+.finishat select.finishat-file {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    height: auto;
+}
+
+.finishat .controls {
+    min-width: 0;
+}
+
 .finishat h4 {
     margin-top: 0;
 }
