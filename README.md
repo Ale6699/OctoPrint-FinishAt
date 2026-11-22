@@ -8,7 +8,7 @@ Pick a file, type "16:00", and Finish At works out when to start:
 - it adds a **safety margin** (5% by default) and the **heat-up time** (4 minutes by default);
 - at start time it **powers the printer on** through [PSU Control](https://plugins.octoprint.org/plugins/psucontrol/) if installed (so it works with any smart plug or relay PSU Control supports), waits for the printer to connect, and **starts the print**.
 
-<!-- TODO screenshot: extras/screenshot.png -->
+<img src="extras/tab.png" alt="The Finish At tab" width="650">
 
 ## Safety
 
