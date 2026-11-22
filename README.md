@@ -51,7 +51,12 @@ Times are read in your **browser's time zone** when you schedule, so it works ev
 
 ## Languages
 
-English and Italian. Translations are welcome: see `translations_src/build_it.py` for how the Italian catalog is built.
+English and Italian, following the language of your browser or of OctoPrint. Translations are welcome:
+see `translations_src/build_it.py` for how the Italian catalog is built.
+
+<img src="extras/settings-it.png" alt="The Finish At settings page in Italian" width="600">
+
+*The settings page in Italian.*
 
 ## Development
 
