@@ -1,0 +1,84 @@
+<div class="pianifica">
+  <!-- Pianificazione attiva -->
+  <div class="alert alert-info" data-bind="visible: job()">
+    <h4>Stampa pianificata</h4>
+    <p>
+      <strong data-bind="text: job() && job().path"></strong><br>
+      Parte <strong data-bind="text: job() && job().start_label"></strong>
+      <span data-bind="text: countdown"></span>,
+      finisce <strong data-bind="text: job() && job().end_label"></strong>.
+    </p>
+    <p data-bind="visible: job() && job().launching">
+      <i class="fas fa-spinner fa-spin"></i> Sta partendo: accendo la stampante e mi connetto…
+    </p>
+    <button class="btn btn-danger" data-bind="click: cancel, disable: busy() || (job() && job().launching)">
+      <i class="fas fa-times"></i> Annulla pianificazione
+    </button>
+  </div>
+
+  <!-- Nuova pianificazione -->
+  <div data-bind="visible: !job()">
+    <h4>Pianifica una stampa</h4>
+    <p class="muted">Scegli il file e l'ora a cui vuoi che finisca: calcolo io quando farla partire.</p>
+
+    <form class="form-horizontal" data-bind="submit: schedule">
+      <div class="control-group">
+        <label class="control-label">File</label>
+        <div class="controls">
+          <select class="input-xxlarge" data-bind="options: files, optionsText: fileLabel, optionsValue: 'path', value: selected, optionsCaption: 'Scegli un file…'"></select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Deve finire alle</label>
+        <div class="controls">
+          <input type="time" class="input-small" step="300" data-bind="value: endTime, valueUpdate: 'input'">
+          <span class="help-inline">se l'ora è già passata, intendo domani</span>
+        </div>
+      </div>
+
+      <div class="control-group" data-bind="visible: preview() || error()">
+        <div class="controls">
+          <div class="alert alert-success pianifica-preview" data-bind="visible: preview()">
+            Parte <strong data-bind="text: preview() && preview().start_label"></strong>
+            e finisce <strong data-bind="text: preview() && preview().end_label"></strong>.<br>
+            <small>
+              Stima dello slicer <span data-bind="text: preview() && preview().estimate_label"></span>,
+              con margine e riscaldamento <span data-bind="text: preview() && preview().planned_label"></span>.
+            </small>
+          </div>
+          <div class="alert alert-error" data-bind="visible: error(), text: error"></div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="controls">
+          <label class="checkbox">
+            <input type="checkbox" data-bind="checked: bedClear">
+            Il piatto è <strong>libero e pulito</strong> e il filamento è caricato
+          </label>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn btn-primary" data-bind="enable: canSchedule">
+            <i class="fas fa-clock"></i> Pianifica
+          </button>
+          <span class="help-inline" data-bind="visible: !psucontrol()">
+            PSU Control non trovato: la stampante deve essere già accesa e connessa.
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Ultimo esito -->
+  <div data-bind="visible: last()">
+    <hr>
+    <p class="muted">
+      Ultimo esito:
+      <span data-bind="css: lastClass, text: last() && last().message"></span>
+    </p>
+  </div>
+</div>
