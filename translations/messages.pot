@@ -1,0 +1,270 @@
+# Translations template for OctoPrint-FinishAt.
+# Copyright (C) 2026 The OctoPrint Project
+# This file is distributed under the same license as the OctoPrint-FinishAt project.
+# Ale6699, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: OctoPrint-FinishAt 0.2.1\n"
+"Report-Msgid-Bugs-To: i18n@octoprint.org\n"
+"POT-Creation-Date: 2026-11-24 18:15+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: octoprint_finishat/__init__.py:220
+msgid "File not found on OctoPrint."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:271
+msgid "Confirm that the bed is clear and clean."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:274
+msgid "A print is already scheduled: cancel it first."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:292
+msgid "Scheduled {file}: starts {start}, finishes {end}"
+msgstr ""
+
+#: octoprint_finishat/__init__.py:308
+msgid "The print is already starting: stop it from OctoPrint."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:311
+msgid "Schedule cancelled: {file}"
+msgstr ""
+
+#: octoprint_finishat/__init__.py:317
+msgid "Unknown command"
+msgstr ""
+
+#: octoprint_finishat/__init__.py:359
+msgid ""
+"Missed start for {file}: OctoPrint was not running at the planned time "
+"({delay} late). Not starting it."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:380 octoprint_finishat/__init__.py:399
+msgid "Not starting {file}: the printer is already printing."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:383
+msgid "Not starting {file}: the file is no longer on OctoPrint."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:411
+msgid "Not starting {file}: the printer did not respond within {duration}."
+msgstr ""
+
+#: octoprint_finishat/__init__.py:418
+msgid "Scheduled print started: {file}"
+msgstr ""
+
+#: octoprint_finishat/__init__.py:424
+msgid "Error while starting {file}: {error}"
+msgstr ""
+
+#: octoprint_finishat/planning.py:86
+#: octoprint_finishat/static/js/finishat.js:27
+msgid "today"
+msgstr ""
+
+#: octoprint_finishat/planning.py:88
+#: octoprint_finishat/static/js/finishat.js:28
+msgid "tomorrow"
+msgstr ""
+
+#: octoprint_finishat/planning.py:91
+msgid "{day} at {time}"
+msgstr ""
+
+#: octoprint_finishat/planning.py:129
+msgid "Invalid date: {value}"
+msgstr ""
+
+#: octoprint_finishat/planning.py:132
+msgid "Enter the finish time as HH:MM, for example 16:00."
+msgstr ""
+
+#: octoprint_finishat/planning.py:135
+msgid "Invalid time: {value}"
+msgstr ""
+
+#: octoprint_finishat/planning.py:153
+msgid "Couldn't find the estimated print time in this file."
+msgstr ""
+
+#: octoprint_finishat/planning.py:161
+msgid ""
+"Too late: the print takes about {duration}. Starting now it would finish "
+"{when}."
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:31
+#, python-format
+msgid "%(day)s at %(time)s"
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:50
+msgid "Choose a file…"
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:55
+msgid "(unknown duration)"
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:81
+msgid "(now)"
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:85
+#, python-format
+msgid "(in %(h)d h %(m)d min)"
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:86
+#, python-format
+msgid "(in %(h)d h)"
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:87
+#, python-format
+msgid "(in %(m)d min)"
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:136
+msgid "Couldn't work out the start time."
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:162
+msgid "Scheduling failed."
+msgstr ""
+
+#: octoprint_finishat/static/js/finishat.js:175
+msgid "Cancelling failed."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:5
+msgid "Margin on the slicer estimate"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:11
+msgid ""
+"Added to the estimate, so the print finishes a little early rather than "
+"late."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:16
+msgid "Heat-up time"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:26
+msgid "Printer connection timeout"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:32
+msgid "How long to wait for the printer to connect after powering it on."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:37
+msgid "Late start tolerance"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:43
+msgid ""
+"If OctoPrint was down at the planned start and comes back later than "
+"this, the print does not start."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:51
+msgid "Send notifications through the Telegram plugin"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:53
+msgid ""
+"They arrive as the Telegram plugin's \"User Notification\" message, which"
+" must be enabled for your chat."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:57
+msgid "Times are read in your browser's time zone when you schedule a print."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:4
+msgid "Scheduled print"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:7
+#: octoprint_finishat/templates/finishat_tab.jinja2:43
+msgid "Starts"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:9
+msgid "finishes"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:12
+msgid "Starting: powering on the printer and connecting…"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:15
+msgid "Cancel schedule"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:21
+msgid "Schedule a print"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:22
+msgid ""
+"Pick the file and the time you want it to finish: I'll work out when to "
+"start it."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:26
+msgid "File"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:33
+msgid "Finish at"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:36
+msgid "if that time has already passed, tomorrow"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:44
+msgid "and finishes"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:46
+msgid "Slicer estimate"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:47
+msgid "with margin and heat-up"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:58
+msgid "The bed is clear and clean and the filament is loaded"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:66
+msgid "Schedule"
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:69
+msgid "PSU Control not found: the printer must already be on and connected."
+msgstr ""
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:80
+msgid "Last result:"
+msgstr ""
+

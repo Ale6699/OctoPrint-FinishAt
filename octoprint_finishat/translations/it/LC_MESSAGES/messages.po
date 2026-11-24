@@ -1,190 +1,267 @@
 # Italian translations for OctoPrint-FinishAt.
+# Copyright (C) 2026 The OctoPrint Project
+# This file is distributed under the same license as the OctoPrint-FinishAt project.
+# Ale6699, 2026.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: OctoPrint-FinishAt\n"
-"PO-Revision-Date: 2026-11-22 00:00+0000\n"
+"Project-Id-Version: OctoPrint-FinishAt 0.2.1\n"
+"Report-Msgid-Bugs-To: i18n@octoprint.org\n"
+"POT-Creation-Date: 2026-11-24 18:15+0000\n"
+"PO-Revision-Date: 2026-11-24 18:15+0000\n"
 "Last-Translator: Ale6699\n"
-"Language-Team: Italian\n"
 "Language: it\n"
+"Language-Team: Italian\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: Babel 2.16.0\n"
 
+#: octoprint_finishat/__init__.py:220
+msgid "File not found on OctoPrint."
+msgstr "File non trovato su OctoPrint."
+
+#: octoprint_finishat/__init__.py:271
+msgid "Confirm that the bed is clear and clean."
+msgstr "Conferma che il piatto è libero e pulito."
+
+#: octoprint_finishat/__init__.py:274
+msgid "A print is already scheduled: cancel it first."
+msgstr "C'è già una stampa pianificata: annullala prima."
+
+#: octoprint_finishat/__init__.py:292
+msgid "Scheduled {file}: starts {start}, finishes {end}"
+msgstr "Pianificata {file}: parte {start}, finisce {end}"
+
+#: octoprint_finishat/__init__.py:308
+msgid "The print is already starting: stop it from OctoPrint."
+msgstr "La stampa sta già partendo: fermala da OctoPrint."
+
+#: octoprint_finishat/__init__.py:311
+msgid "Schedule cancelled: {file}"
+msgstr "Pianificazione annullata: {file}"
+
+#: octoprint_finishat/__init__.py:317
+msgid "Unknown command"
+msgstr "Comando sconosciuto"
+
+#: octoprint_finishat/__init__.py:359
+msgid ""
+"Missed start for {file}: OctoPrint was not running at the planned time ({delay} late). Not "
+"starting it."
+msgstr ""
+"Partenza mancata per {file}: OctoPrint non era attivo all'ora prevista (ritardo {delay}). Non la "
+"avvio."
+
+#: octoprint_finishat/__init__.py:380 octoprint_finishat/__init__.py:399
+msgid "Not starting {file}: the printer is already printing."
+msgstr "Non avvio {file}: la stampante sta già stampando."
+
+#: octoprint_finishat/__init__.py:383
+msgid "Not starting {file}: the file is no longer on OctoPrint."
+msgstr "Non avvio {file}: il file non c'è più su OctoPrint."
+
+#: octoprint_finishat/__init__.py:411
+msgid "Not starting {file}: the printer did not respond within {duration}."
+msgstr "Non avvio {file}: la stampante non risponde dopo {duration}."
+
+#: octoprint_finishat/__init__.py:418
+msgid "Scheduled print started: {file}"
+msgstr "Stampa pianificata partita: {file}"
+
+#: octoprint_finishat/__init__.py:424
+msgid "Error while starting {file}: {error}"
+msgstr "Errore durante l'avvio di {file}: {error}"
+
+#: octoprint_finishat/planning.py:86 octoprint_finishat/static/js/finishat.js:27
+msgid "today"
+msgstr "oggi"
+
+#: octoprint_finishat/planning.py:88 octoprint_finishat/static/js/finishat.js:28
+msgid "tomorrow"
+msgstr "domani"
+
+#: octoprint_finishat/planning.py:91
+msgid "{day} at {time}"
+msgstr "{day} alle {time}"
+
+#: octoprint_finishat/planning.py:129
+msgid "Invalid date: {value}"
+msgstr "Data non valida: {value}"
+
+#: octoprint_finishat/planning.py:132
+msgid "Enter the finish time as HH:MM, for example 16:00."
+msgstr "Scrivi l'ora di fine nel formato HH:MM, per esempio 16:00."
+
+#: octoprint_finishat/planning.py:135
+msgid "Invalid time: {value}"
+msgstr "Ora non valida: {value}"
+
+#: octoprint_finishat/planning.py:153
+msgid "Couldn't find the estimated print time in this file."
+msgstr "Non trovo il tempo stimato in questo file."
+
+#: octoprint_finishat/planning.py:161
+msgid "Too late: the print takes about {duration}. Starting now it would finish {when}."
+msgstr "Troppo tardi: la stampa dura circa {duration}. Partendo adesso finirebbe {when}."
+
+#: octoprint_finishat/static/js/finishat.js:31
 #, python-format
 msgid "%(day)s at %(time)s"
 msgstr "%(day)s alle %(time)s"
 
+#: octoprint_finishat/static/js/finishat.js:50
+msgid "Choose a file…"
+msgstr "Scegli un file…"
+
+#: octoprint_finishat/static/js/finishat.js:55
+msgid "(unknown duration)"
+msgstr "(durata sconosciuta)"
+
+#: octoprint_finishat/static/js/finishat.js:81
+msgid "(now)"
+msgstr "(adesso)"
+
+#: octoprint_finishat/static/js/finishat.js:85
 #, python-format
 msgid "(in %(h)d h %(m)d min)"
 msgstr "(tra %(h)d h %(m)d min)"
 
+#: octoprint_finishat/static/js/finishat.js:86
 #, python-format
 msgid "(in %(h)d h)"
 msgstr "(tra %(h)d h)"
 
+#: octoprint_finishat/static/js/finishat.js:87
 #, python-format
 msgid "(in %(m)d min)"
 msgstr "(tra %(m)d min)"
 
-msgid "(now)"
-msgstr "(adesso)"
-
-msgid "(unknown duration)"
-msgstr "(durata sconosciuta)"
-
-msgid "A print is already scheduled: cancel it first."
-msgstr "C'è già una stampa pianificata: annullala prima."
-
-msgid "Added to the estimate, so the print finishes a little early rather than late."
-msgstr "Si aggiunge alla stima, così la stampa finisce un po' prima invece che in ritardo."
-
-msgid "Cancel schedule"
-msgstr "Annulla pianificazione"
-
-msgid "Cancelling failed."
-msgstr "Annullamento non riuscito."
-
-msgid "Choose a file…"
-msgstr "Scegli un file…"
-
-msgid "Confirm that the bed is clear and clean."
-msgstr "Conferma che il piatto è libero e pulito."
-
-msgid "Couldn't find the estimated print time in this file."
-msgstr "Non trovo il tempo stimato in questo file."
-
+#: octoprint_finishat/static/js/finishat.js:136
 msgid "Couldn't work out the start time."
 msgstr "Non riesco a calcolare l'ora di partenza."
 
-msgid "Enter the finish time as HH:MM, for example 16:00."
-msgstr "Scrivi l'ora di fine nel formato HH:MM, per esempio 16:00."
-
-msgid "Error while starting {file}: {error}"
-msgstr "Errore durante l'avvio di {file}: {error}"
-
-msgid "File"
-msgstr "File"
-
-msgid "File not found on OctoPrint."
-msgstr "File non trovato su OctoPrint."
-
-msgid "Finish at"
-msgstr "Deve finire alle"
-
-msgid "Heat-up time"
-msgstr "Tempo di riscaldamento"
-
-msgid "How long to wait for the printer to connect after powering it on."
-msgstr "Quanto aspettare che la stampante si connetta dopo averla accesa."
-
-msgid "If OctoPrint was down at the planned start and comes back later than this, the print does not start."
-msgstr "Se all'ora di partenza OctoPrint era spento e riparte più tardi di così, la stampa non parte."
-
-msgid "Invalid date: {value}"
-msgstr "Data non valida: {value}"
-
-msgid "Invalid time: {value}"
-msgstr "Ora non valida: {value}"
-
-msgid "Last result:"
-msgstr "Ultimo esito:"
-
-msgid "Late start tolerance"
-msgstr "Tolleranza sul ritardo"
-
-msgid "Margin on the slicer estimate"
-msgstr "Margine sulla stima dello slicer"
-
-msgid "Missed start for {file}: OctoPrint was not running at the planned time ({delay} late). Not starting it."
-msgstr "Partenza mancata per {file}: OctoPrint non era attivo all'ora prevista (ritardo {delay}). Non la avvio."
-
-msgid "Not starting {file}: the file is no longer on OctoPrint."
-msgstr "Non avvio {file}: il file non c'è più su OctoPrint."
-
-msgid "Not starting {file}: the printer did not respond within {duration}."
-msgstr "Non avvio {file}: la stampante non risponde dopo {duration}."
-
-msgid "Not starting {file}: the printer is already printing."
-msgstr "Non avvio {file}: la stampante sta già stampando."
-
-msgid "PSU Control not found: the printer must already be on and connected."
-msgstr "PSU Control non trovato: la stampante deve essere già accesa e connessa."
-
-msgid "Pick the file and the time you want it to finish: I'll work out when to start it."
-msgstr "Scegli il file e l'ora a cui vuoi che finisca: calcolo io quando farla partire."
-
-msgid "Printer connection timeout"
-msgstr "Attesa massima per la connessione"
-
-msgid "Schedule"
-msgstr "Pianifica"
-
-msgid "Schedule a print"
-msgstr "Pianifica una stampa"
-
-msgid "Schedule cancelled: {file}"
-msgstr "Pianificazione annullata: {file}"
-
-msgid "Scheduled print"
-msgstr "Stampa pianificata"
-
-msgid "Scheduled print started: {file}"
-msgstr "Stampa pianificata partita: {file}"
-
-msgid "Scheduled {file}: starts {start}, finishes {end}"
-msgstr "Pianificata {file}: parte {start}, finisce {end}"
-
+#: octoprint_finishat/static/js/finishat.js:162
 msgid "Scheduling failed."
 msgstr "Pianificazione non riuscita."
 
+#: octoprint_finishat/static/js/finishat.js:175
+msgid "Cancelling failed."
+msgstr "Annullamento non riuscito."
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:5
+msgid "Margin on the slicer estimate"
+msgstr "Margine sulla stima dello slicer"
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:11
+msgid "Added to the estimate, so the print finishes a little early rather than late."
+msgstr "Si aggiunge alla stima, così la stampa finisce un po' prima invece che in ritardo."
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:16
+msgid "Heat-up time"
+msgstr "Tempo di riscaldamento"
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:26
+msgid "Printer connection timeout"
+msgstr "Attesa massima per la connessione"
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:32
+msgid "How long to wait for the printer to connect after powering it on."
+msgstr "Quanto aspettare che la stampante si connetta dopo averla accesa."
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:37
+msgid "Late start tolerance"
+msgstr "Tolleranza sul ritardo"
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:43
+msgid ""
+"If OctoPrint was down at the planned start and comes back later than this, the print does not "
+"start."
+msgstr "Se all'ora di partenza OctoPrint era spento e riparte più tardi di così, la stampa non parte."
+
+#: octoprint_finishat/templates/finishat_settings.jinja2:51
 msgid "Send notifications through the Telegram plugin"
 msgstr "Invia gli avvisi tramite il plugin Telegram"
 
-msgid "Slicer estimate"
-msgstr "Stima dello slicer"
+#: octoprint_finishat/templates/finishat_settings.jinja2:53
+msgid ""
+"They arrive as the Telegram plugin's \"User Notification\" message, which must be enabled for "
+"your chat."
+msgstr ""
+"Arrivano come messaggio \"User Notification\" del plugin Telegram, che deve essere attivo per la "
+"tua chat."
 
-msgid "Starting: powering on the printer and connecting…"
-msgstr "Sta partendo: accendo la stampante e mi connetto…"
-
-msgid "Starts"
-msgstr "Parte"
-
-msgid "The bed is clear and clean and the filament is loaded"
-msgstr "Il piatto è libero e pulito e il filamento è caricato"
-
-msgid "The print is already starting: stop it from OctoPrint."
-msgstr "La stampa sta già partendo: fermala da OctoPrint."
-
-msgid "They arrive as the Telegram plugin's \"User Notification\" message, which must be enabled for your chat."
-msgstr "Arrivano come messaggio \"User Notification\" del plugin Telegram, che deve essere attivo per la tua chat."
-
+#: octoprint_finishat/templates/finishat_settings.jinja2:57
 msgid "Times are read in your browser's time zone when you schedule a print."
 msgstr "Quando pianifichi una stampa, gli orari sono letti nel fuso orario del tuo browser."
 
-msgid "Too late: the print takes about {duration}. Starting now it would finish {when}."
-msgstr "Troppo tardi: la stampa dura circa {duration}. Partendo adesso finirebbe {when}."
+#: octoprint_finishat/templates/finishat_tab.jinja2:4
+msgid "Scheduled print"
+msgstr "Stampa pianificata"
 
-msgid "Unknown command"
-msgstr "Comando sconosciuto"
+#: octoprint_finishat/templates/finishat_tab.jinja2:7
+#: octoprint_finishat/templates/finishat_tab.jinja2:43
+msgid "Starts"
+msgstr "Parte"
 
-msgid "and finishes"
-msgstr "e finisce"
-
+#: octoprint_finishat/templates/finishat_tab.jinja2:9
 msgid "finishes"
 msgstr "finisce"
 
+#: octoprint_finishat/templates/finishat_tab.jinja2:12
+msgid "Starting: powering on the printer and connecting…"
+msgstr "Sta partendo: accendo la stampante e mi connetto…"
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:15
+msgid "Cancel schedule"
+msgstr "Annulla pianificazione"
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:21
+msgid "Schedule a print"
+msgstr "Pianifica una stampa"
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:22
+msgid "Pick the file and the time you want it to finish: I'll work out when to start it."
+msgstr "Scegli il file e l'ora a cui vuoi che finisca: calcolo io quando farla partire."
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:26
+msgid "File"
+msgstr "File"
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:33
+msgid "Finish at"
+msgstr "Deve finire alle"
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:36
 msgid "if that time has already passed, tomorrow"
 msgstr "se l'ora è già passata, intendo domani"
 
-msgid "today"
-msgstr "oggi"
+#: octoprint_finishat/templates/finishat_tab.jinja2:44
+msgid "and finishes"
+msgstr "e finisce"
 
-msgid "tomorrow"
-msgstr "domani"
+#: octoprint_finishat/templates/finishat_tab.jinja2:46
+msgid "Slicer estimate"
+msgstr "Stima dello slicer"
 
+#: octoprint_finishat/templates/finishat_tab.jinja2:47
 msgid "with margin and heat-up"
 msgstr "con margine e riscaldamento"
 
-msgid "{day} at {time}"
-msgstr "{day} alle {time}"
+#: octoprint_finishat/templates/finishat_tab.jinja2:58
+msgid "The bed is clear and clean and the filament is loaded"
+msgstr "Il piatto è libero e pulito e il filamento è caricato"
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:66
+msgid "Schedule"
+msgstr "Pianifica"
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:69
+msgid "PSU Control not found: the printer must already be on and connected."
+msgstr "PSU Control non trovato: la stampante deve essere già accesa e connessa."
+
+#: octoprint_finishat/templates/finishat_tab.jinja2:80
+msgid "Last result:"
+msgstr "Ultimo esito:"
+

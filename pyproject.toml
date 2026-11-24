@@ -1,32 +1,42 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-FinishAt"
-version = "0.2.0"
+version = "0.2.1"
 description = "Schedule a print by choosing the time it should finish."
-readme = "README.md"
-license = { text = "AGPL-3.0-or-later" }
-authors = [{ name = "Ale6699" }]
-requires-python = ">=3.8,<4"
-dependencies = []
+authors = [
+    {name = "Ale6699", email = "44789012+Ale6699@users.noreply.github.com"}
+]
+readme = {file = "README.md", content-type = "text/markdown"}
+dynamic = [
+    "license"
+]
 
-[project.urls]
-Homepage = "https://github.com/Ale6699/OctoPrint-FinishAt"
+requires-python = ">=3.7, <4"
+
+# any additional requirements (besides OctoPrint) should be listed here
+dependencies = [
+    "backports.zoneinfo; python_version < '3.9'"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = [
+    "octoprint_finishat",
+    "octoprint_finishat.*"
+]
 
 [project.entry-points."octoprint.plugin"]
 finishat = "octoprint_finishat"
 
-[tool.setuptools]
-packages = ["octoprint_finishat"]
-include-package-data = true
+[project.urls]
+Homepage = "https://github.com/Ale6699/OctoPrint-FinishAt"
 
-[tool.setuptools.package-data]
-octoprint_finishat = [
-    "templates/*.jinja2",
-    "static/js/*.js",
-    "static/css/*.css",
-    "translations/*/LC_MESSAGES/*.po",
-    "translations/*/LC_MESSAGES/*.mo",
+[project.optional-dependencies]
+develop = [
+    "go-task-bin"
 ]

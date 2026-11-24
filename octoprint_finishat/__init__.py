@@ -21,7 +21,10 @@ from . import planning
 try:
     from zoneinfo import ZoneInfo
 except ImportError:  # pragma: no cover - Python < 3.9
-    ZoneInfo = None
+    try:
+        from backports.zoneinfo import ZoneInfo  # installed as a dependency on 3.7/3.8
+    except ImportError:
+        ZoneInfo = None
 
 _TRANSLATIONS_DIR = os.path.join(os.path.dirname(__file__), "translations")
 
@@ -69,7 +72,6 @@ class FinishAtPlugin(
 
     def get_settings_defaults(self):
         return {
-            "timezone": "",  # empty: the browser's time zone, sent when scheduling
             "margin_percent": 5,  # added to the slicer's estimate
             "heatup_minutes": 4,  # nozzle and bed heat-up
             "connect_timeout_seconds": 180,
@@ -85,13 +87,12 @@ class FinishAtPlugin(
         return {"never": [["job_json"], ["last_json"]]}
 
     def _zone(self, name: Optional[str]):
-        """The requested time zone, or the configured one, or the server's."""
-        for candidate in (name, self._settings.get(["timezone"])):
-            if candidate and ZoneInfo is not None:
-                try:
-                    return ZoneInfo(candidate)
-                except Exception:
-                    self._logger.warning("Unknown time zone %r, ignoring it", candidate)
+        """The browser's time zone sent with the request, or else the server's."""
+        if name and ZoneInfo is not None:
+            try:
+                return ZoneInfo(name)
+            except Exception:
+                self._logger.warning("Unknown time zone %r, using the server's", name)
         return dt.datetime.now().astimezone().tzinfo
 
     def _load_json(self, key: str) -> Optional[dict]:
@@ -473,7 +474,7 @@ class FinishAtPlugin(
 
 
 __plugin_name__ = "Finish At"
-__plugin_pythoncompat__ = ">=3.8,<4"
+__plugin_pythoncompat__ = ">=3.7,<4"
 
 
 def __plugin_load__():

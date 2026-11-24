@@ -52,7 +52,8 @@ Times are read in your **browser's time zone** when you schedule, so it works ev
 ## Languages
 
 English and Italian, following the language of your browser or of OctoPrint. Translations are welcome:
-see `translations_src/build_it.py` for how the Italian catalog is built.
+they use Babel like the rest of OctoPrint, with the commands in `Taskfile.yml`
+(`task babel-new -- <locale>`, `task babel-refresh`, `task babel-compile`, `task babel-bundle`).
 
 <img src="extras/settings-it.png" alt="The Finish At settings page in Italian" width="600">
 
@@ -61,7 +62,7 @@ see `translations_src/build_it.py` for how the Italian catalog is built.
 ## Development
 
 This plugin was developed with the help of an AI assistant (Claude), and designed, tested on a real
-printer and maintained by its author. Tested with OctoPrint 1.11.
+printer and maintained by its author. Tested with OctoPrint 1.11. Requires Python 3.7 or later.
 
 The scheduling maths lives in `octoprint_finishat/planning.py` and can be tested without OctoPrint:
 

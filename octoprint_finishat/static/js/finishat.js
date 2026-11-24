@@ -171,7 +171,8 @@ $(function () {
                 .fail(function (xhr) {
                     new PNotify({
                         title: "Finish At",
-                        text: errorText(xhr, gettext("Cancelling failed.")),
+                        // Escaped: the message can contain a file name.
+                        text: _.escape(errorText(xhr, gettext("Cancelling failed."))),
                         type: "error"
                     });
                 })
@@ -200,7 +201,8 @@ $(function () {
             if (data.message) {
                 new PNotify({
                     title: "Finish At",
-                    text: data.message,
+                    // Escaped: the message contains the file name.
+                    text: _.escape(data.message),
                     type: data.level || "info",
                     hide: data.level !== "error"
                 });
